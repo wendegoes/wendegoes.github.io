@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f0f0f, #1b1b1b);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .chat {
+      width: 100%;
+      max-width: 420px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 0 10px;
+    }
+
+    .messages {
+      flex: 1;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .user {
+      margin-bottom: 6px;
+    }
+
+    .ai {
+      margin-bottom: 10px;
+      color: #4CAF50;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: #222;
+      color: white;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #4CAF50;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #43a047;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat">
+  <h2>AI Chat</h2>
+  <div class="messages" id="messages"></div>
+  <input id="input" placeholder="Type a message..." />
+  <button onclick="send()">Send</button>
+</div>
+
+<script>
+  const WORKER_URL = "https://openaiapikey1.noah-ruwersma.workers.dev";
+
+  async function send() {
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    messages.innerHTML += `<div class="user"><b>You:</b> ${text}</div>`;
+    input.value = "";
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      });
+
+      if (!res.ok) {
+        throw new Error("Worker error");
+      }
+
+      const data = await res.json();
+      messages.innerHTML += `<div class="ai"><b>AI:</b> ${data.reply}</div>`;
+      messages.scrollTop = messages.scrollHeight;
+
+    } catch (err) {
+      messages.innerHTML += `<div style="color:red;">Error talking to AI</div>`;
+    }
+  }
+</script>
+
+</body>
+</html>
