@@ -1,124 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>>home</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>wendegoes</title>
   <style>
-    :root {
-      --green: #00ff9c;
-      --dark: #050505;
-      --dim: #00aa66;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
       margin: 0;
-      padding: 20px;
-      background: var(--dark);
-      color: var(--green);
-      font-family: "Courier New", monospace;
-      font-size: 16px;
+      padding: 0;
     }
-
-    .terminal {
-      max-width: 900px;
-      margin: auto;
+    header {
+      background-color: #007acc;
+      color: white;
+      text-align: center;
+      padding: 2rem 0;
     }
-
-    .ascii {
-      white-space: pre;
-      color: var(--green);
-      margin-bottom: 20px;
-      line-height: 1.1;
+    main {
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
     }
-
-    .dim {
-      color: var(--dim);
+    h2 {
+      color: #007acc;
     }
-
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 1rem 0;
+    }
     a {
-      color: var(--green);
       text-decoration: none;
+      color: #007acc;
+      font-weight: bold;
     }
-
     a:hover {
       text-decoration: underline;
     }
-
-    .line {
-      margin: 6px 0;
-    }
-
-    .prompt::before {
-      content: "user@github:~$ ";
-      color: var(--dim);
-    }
-
-    .cursor {
-      display: inline-block;
-      width: 10px;
-      background: var(--green);
-      margin-left: 2px;
-      animation: blink 1s steps(2) infinite;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
+    footer {
+      text-align: center;
+      padding: 1rem 0;
+      background-color: #333;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <div class="terminal">
+  <header>
+    <h1>Welcome to P3ngwen's GitHub Pages</h1>
+  </header>
 
-    <div class="ascii">
-██████╗ ███████╗███╗   ██╗ ██████╗ ██╗    ██╗███████╗███╗   ██╗
-██╔══██╗██╔════╝████╗  ██║██╔════╝ ██║    ██║██╔════╝████╗  ██║
-██████╔╝█████╗  ██╔██╗ ██║██║  ███╗██║ █╗ ██║█████╗  ██╔██╗ ██║
-██╔═══╝ ██╔══╝  ██║╚██╗██║██║   ██║██║███╗██║██╔══╝  ██║╚██╗██║
-██║     ███████╗██║ ╚████║╚██████╔╝╚███╔███╔╝███████╗██║ ╚████║
-╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═══╝
-    </div>
+  <main>
+    <h2>My Pages</h2>
+    <ul>
+      <li><a href="ai">UnblockedGPT</a></li>
+      <li><a href="page2.html">Page 2</a></li>
+      <li><a href="page3.html">Page 3</a></li>
+      <!-- Add more pages here -->
+    </ul>
+  </main>
 
-    <div class="line dim">[ ACCESS GRANTED ]</div>
-    <div class="line dim">Initializing terminal interface...</div>
-    <br>
-
-    <div class="line prompt">ls</div>
-
-    <div id="pages"></div>
-
-    <br>
-    <div class="line prompt">echo "Welcome."</div>
-    <div class="line">Welcome to my GitHub Pages terminal.</div>
-
-    <div class="line prompt">
-      <span class="cursor"></span>
-    </div>
-  </div>
-
-  <script>
-    // 🔧 EDIT THIS LIST
-    const pages = [
-      { name: "home.html", url: "home.html" },
-      { name: "projects.html", url: "projects.html" },
-      { name: "about.html", url: "about.html" },
-      { name: "contact.html", url: "contact.html" }
-    ];
-
-    const container = document.getElementById("pages");
-
-    pages.forEach(page => {
-      const line = document.createElement("div");
-      line.className = "line";
-      line.innerHTML = `<a href="${page.url}">${page.name}</a>`;
-      container.appendChild(line);
-    });
-  </script>
+  <footer>
+    &copy; 2026 wendegoes
+  </footer>
 </body>
 </html>
