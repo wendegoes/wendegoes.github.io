@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: radial-gradient(1200px 600px at 20% -10%, #1e293b 0%, #020617 60%);
+      --panel: rgba(2, 6, 23, 0.85);
+      --border: rgba(148, 163, 184, 0.15);
+
+      --user: linear-gradient(135deg, #3b82f6, #2563eb);
+      --ai: rgba(30, 41, 59, 0.9);
+
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+
+    body.light {
+      --bg: radial-gradient(1200px 600px at 20% -10%, #e2e8f0 0%, #f8fafc 60%);
+      --panel: rgba(255, 255, 255, 0.9);
+      --border: rgba(2, 6, 23, 0.1);
+
+      --user: linear-gradient(135deg, #3b82f6, #2563eb);
+      --ai: #f1f5f9;
+
+      --text: #020617;
+      --muted: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text);
+    }
+
+    .chat {
+      width: 100%;
+      max-width: 440px;
+      height: 92vh;
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 14px 16px;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: .3px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      user-select: none;
+    }
+
+    .header-actions {
+      position: absolute;
+      right: 12px;
+      top: 10px;
+      display: flex;
+      gap: 12px;
+      font-size: 15px;
+    }
+
+    .header-actions span {
+      cursor: pointer;
+      opacity: .75;
+      transition: opacity .2s, transform .2s;
+    }
+
+    .header-actions span:hover {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+
+    .messages {
+      flex: 1;
+      padding: 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,.25);
+      border-radius: 10px;
+    }
+
+    .bubble {
+      max-width: 82%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      line-height: 1.45;
+      font-size: 14px;
+      animation: pop .2s ease-out;
+      white-space: pre-wrap;
+    }
+
+    @keyframes pop {
+      from {
+        transform: scale(.96);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .user {
+      align-self: flex-end;
+      background: var(--user);
+      color: white;
+      border-bottom-right-radius: 6px;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, .35);
+    }
+
+    .ai {
+      align-self: flex-start;
+      background: var(--ai);
+      color: var(--text);
+      border-bottom-left-radius: 6px;
+      box-shadow: inset 0 0 0 1px var(--border);
+    }
+
+    .typing {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: 6px;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: .4; }
+    }
+
+    .input-area {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      background: linear-gradient(
+        to top,
+        rgba(0,0,0,.08),
+        transparent
+      );
+    }
+
+    textarea {
+      flex: 1;
+      resize: none;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+    }
+
+    textarea:focus {
+      border-color: #3b82f6;
+    }
+
+    button {
+      padding: 0 18px;
+      border-radius: 16px;
+      border: none;
+      background: var(--user);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, .4);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(37, 99, 235, .5);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 14px rgba(37, 99, 235, .35);
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat">
+  <div class="header">
+    AI Chat
+    <div class="header-actions">
+      <span onclick="toggleTheme()">🌗</span>
+      <span onclick="clearChat()">🗑️</span>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <textarea id="input" rows="1" placeholder="Type a message…"></textarea>
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script>
+  const WORKER_URL = "https://openaiapikey1.noah-ruwersma.workers.dev";
+  const messages = document.getElementById("messages");
+  const input = document.getElementById("input");
+
+  // Restore saved state
+  document.body.className = localStorage.theme || "";
+  messages.innerHTML = localStorage.chat || "";
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  function toggleTheme() {
+    document.body.classList.toggle("light");
+    localStorage.theme = document.body.classList.contains("light") ? "light" : "";
+  }
+
+  function saveChat() {
+    localStorage.chat = messages.innerHTML;
+  }
+
+  function clearChat() {
+    if (!confirm("Clear chat history?")) return;
+    messages.innerHTML = "";
+    localStorage.removeItem("chat");
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    messages.innerHTML += `<div class="bubble user">${text}</div>`;
+    input.value = "";
+    saveChat();
+    messages.scrollTop = messages.scrollHeight;
+
+    const typing = document.createElement("div");
+    typing.className = "typing";
+    typing.textContent = "AI is typing…";
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      });
+
+      const data = await res.json();
+      typing.remove();
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble ai";
+      messages.appendChild(bubble);
+
+      let i = 0;
+      const reply = data.reply;
+      const interval = setInterval(() => {
+        bubble.textContent += reply[i];
+        i++;
+        messages.scrollTop = messages.scrollHeight;
+        if (i >= reply.length) {
+          clearInterval(interval);
+          saveChat();
+        }
+      }, 15);
+
+    } catch {
+      typing.textContent = "⚠️ Error contacting AI";
+    }
+  }
+</script>
+
+</body>
+</html>
