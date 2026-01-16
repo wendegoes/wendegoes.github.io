@@ -1,93 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AI Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       height: 100vh;
-      background: linear-gradient(135deg, #0f0f0f, #1b1b1b);
-      font-family: Arial, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f2937, #020617);
       display: flex;
       justify-content: center;
       align-items: center;
-      color: white;
+      color: #e5e7eb;
     }
 
-    .chat {
+    .chat-container {
       width: 100%;
       max-width: 420px;
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      height: 90vh;
+      background: #020617;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      border: 1px solid #1f2937;
     }
 
-    h2 {
+    .header {
+      padding: 16px;
       text-align: center;
-      margin: 0 0 10px;
+      font-weight: 600;
+      background: linear-gradient(180deg, #020617, #020617cc);
+      border-bottom: 1px solid #1f2937;
     }
 
     .messages {
       flex: 1;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px;
+      padding: 16px;
       overflow-y: auto;
-      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bubble {
+      max-width: 85%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      line-height: 1.4;
       font-size: 14px;
+      animation: fadeIn 0.2s ease;
     }
 
     .user {
-      margin-bottom: 6px;
+      align-self: flex-end;
+      background: #2563eb;
+      color: white;
+      border-bottom-right-radius: 4px;
     }
 
     .ai {
-      margin-bottom: 10px;
-      color: #4CAF50;
+      align-self: flex-start;
+      background: #1f2937;
+      color: #e5e7eb;
+      border-bottom-left-radius: 4px;
+    }
+
+    .input-area {
+      padding: 12px;
+      border-top: 1px solid #1f2937;
+      display: flex;
+      gap: 8px;
+      background: #020617;
     }
 
     input {
-      padding: 10px;
-      border-radius: 8px;
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
       border: none;
       outline: none;
-      background: #222;
-      color: white;
+      background: #020617;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
       font-size: 14px;
     }
 
     button {
-      margin-top: 8px;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 0 16px;
+      border-radius: 12px;
       border: none;
-      background: #4CAF50;
-      font-weight: bold;
+      background: #2563eb;
+      color: white;
+      font-weight: 600;
       cursor: pointer;
     }
 
     button:hover {
-      background: #43a047;
+      background: #1d4ed8;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="chat">
-  <h2>AI Chat</h2>
+<div class="chat-container">
+  <div class="header">AI Chat</div>
+
   <div class="messages" id="messages"></div>
-  <input id="input" placeholder="Type a message..." />
-  <button onclick="send()">Send</button>
+
+  <div class="input-area">
+    <input id="input" placeholder="Type a message…" />
+    <button onclick="send()">Send</button>
+  </div>
 </div>
 
 <script>
-  const WORKER_URL = "https://openaiapikey1.noah-ruwersma.workers.dev/";
+  const WORKER_URL = "https://openaiapikey1.noah-ruwersma.workers.dev";
 
   async function send() {
     const input = document.getElementById("input");
@@ -96,7 +143,7 @@
 
     if (!text) return;
 
-    messages.innerHTML += `<div class="user"><b>You:</b> ${text}</div>`;
+    messages.innerHTML += `<div class="bubble user">${text}</div>`;
     input.value = "";
     messages.scrollTop = messages.scrollHeight;
 
@@ -107,16 +154,11 @@
         body: JSON.stringify({ message: text })
       });
 
-      if (!res.ok) {
-        throw new Error("Worker error");
-      }
-
       const data = await res.json();
-      messages.innerHTML += `<div class="ai"><b>AI:</b> ${data.reply}</div>`;
+      messages.innerHTML += `<div class="bubble ai">${data.reply}</div>`;
       messages.scrollTop = messages.scrollHeight;
-
-    } catch (err) {
-      messages.innerHTML += `<div style="color:red;">Error talking to AI</div>`;
+    } catch {
+      messages.innerHTML += `<div class="bubble ai">⚠️ Error contacting AI</div>`;
     }
   }
 </script>
