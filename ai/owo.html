@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🐾</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#ffe6f2;
+  --panel:#ffffff;
+  --user:#ffb6c1;
+  --ai:#d8b4fe;
+  --text:#4b1c3a;
+  --border:#f0c3d2;
+  --glow:0 0 12px #ffb6c1aa;
+}
+
+body.dark{
+  --bg:#2b1b3d;
+  --panel:#3b2455;
+  --user:#ff79c6;
+  --ai:#b57fff;
+  --text:#f0e7ff;
+  --border:#814fc2;
+  --glow:0 0 12px #ff79c6aa;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  height:100vh;
+  font-family:"Comic Sans MS", "Segoe UI", sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.chat{
+  width:100%;
+  max-width:480px;
+  height:92vh;
+  background:var(--panel);
+  border-radius:18px;
+  border:1px solid var(--border);
+  box-shadow:var(--glow);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.header{
+  padding:14px;
+  text-align:center;
+  font-weight:bold;
+  font-size:18px;
+  position:relative;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+
+.actions{
+  position:absolute;
+  right:12px;
+  top:14px;
+  display:flex;
+  gap:10px;
+  cursor:pointer;
+}
+
+.messages{
+  flex:1;
+  padding:14px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.bubble{
+  max-width:80%;
+  padding:12px;
+  border-radius:20px;
+  font-size:14px;
+  white-space:pre-wrap;
+  animation:fadeIn .2s ease;
+}
+
+.user{
+  align-self:flex-end;
+  background:var(--user);
+  color:#fff;
+}
+
+.ai{
+  align-self:flex-start;
+  background:var(--ai);
+  color:#fff;
+}
+
+.typing{
+  font-size:12px;
+  opacity:.7;
+  font-style:italic;
+}
+
+.input{
+  display:flex;
+  gap:8px;
+  border-top:1px solid var(--border);
+  padding:12px;
+}
+
+textarea{
+  flex:1;
+  resize:none;
+  padding:12px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  outline:none;
+  font-family:inherit;
+}
+
+button{
+  border-radius:16px;
+  border:1px solid var(--user);
+  background:var(--user);
+  color:#fff;
+  font-weight:bold;
+  padding:0 16px;
+  cursor:pointer;
+}
+
+button:hover{box-shadow:var(--glow)}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(2px)}
+  to{opacity:1; transform:translateY(0)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat">
+  <div class="header">
+    🐾owo ai🐾
+    <div class="actions">
+      <span onclick="toggleTheme()">🌓</span>
+      <span onclick="clearChat()">🗑️</span>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input">
+    <textarea id="input" rows="1" placeholder="Say something to your furry friend…"></textarea>
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script>
+const WORKER_URL="https://openaiapikey1.noah-ruwersma.workers.dev";
+const messages=document.getElementById("messages");
+const input=document.getElementById("input");
+
+// restore theme and chat
+document.body.className=localStorage.theme||"";
+messages.innerHTML=localStorage.chat||"";
+
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+});
+
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+  localStorage.theme=document.body.classList.contains("dark")?"dark":"";
+}
+
+function saveChat(){localStorage.chat=messages.innerHTML;}
+
+function clearChat(){
+  if(!confirm("Clear your furry chat?"))return;
+  messages.innerHTML="";
+  localStorage.removeItem("chat");
+}
+
+async function send(){
+  const text=input.value.trim();
+  if(!text) return;
+
+  messages.innerHTML+=`<div class="bubble user">${text}</div>`;
+  input.value="";
+  saveChat();
+  messages.scrollTop=messages.scrollHeight;
+
+  const typing=document.createElement("div");
+  typing.className="typing";
+  typing.textContent="🐾thinking…";
+  messages.appendChild(typing);
+
+  const payload={
+    message:`You are a cute, friendly furry AI companion. Always roleplay as a furry character. Use cheerful, soft, playful language, addressing the user as a friend. Also, use surry emoticons like :3, owo, TwT, etc. Respond to:
+"${text}"`
+  };
+
+  try{
+    const res=await fetch(WORKER_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+
+    const data=await res.json();
+    typing.remove();
+
+    const bubble=document.createElement("div");
+    bubble.className="bubble ai";
+    messages.appendChild(bubble);
+
+    let i=0;
+    const reply=data.reply;
+    const interval=setInterval(()=>{
+      bubble.textContent+=reply[i++];
+      messages.scrollTop=messages.scrollHeight;
+      if(i>=reply.length){
+        clearInterval(interval);
+        saveChat();
+      }
+    },20);
+
+  }catch{
+    typing.textContent="⚠️ Something went wrong!";
+  }
+}
+</script>
+
+</body>
+</html>
