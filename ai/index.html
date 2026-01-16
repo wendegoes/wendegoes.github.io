@@ -35,7 +35,6 @@
       justify-content: center;
       align-items: center;
       color: var(--text);
-      transition: background .2s;
     }
 
     .chat {
@@ -59,12 +58,17 @@
       position: relative;
     }
 
-    .toggle {
+    .header-actions {
       position: absolute;
-      right: 14px;
-      top: 12px;
-      cursor: pointer;
+      right: 12px;
+      top: 10px;
+      display: flex;
+      gap: 10px;
       font-size: 14px;
+    }
+
+    .header-actions span {
+      cursor: pointer;
       opacity: .8;
     }
 
@@ -140,7 +144,10 @@
 <div class="chat">
   <div class="header">
     AI Chat
-    <span class="toggle" onclick="toggleTheme()">🌗</span>
+    <div class="header-actions">
+      <span onclick="toggleTheme()">🌗</span>
+      <span onclick="clearChat()">🗑️</span>
+    </div>
   </div>
 
   <div class="messages" id="messages"></div>
@@ -156,7 +163,7 @@
   const messages = document.getElementById("messages");
   const input = document.getElementById("input");
 
-  // Load saved theme & chat
+  // Restore saved state
   document.body.className = localStorage.theme || "";
   messages.innerHTML = localStorage.chat || "";
 
@@ -174,6 +181,12 @@
 
   function saveChat() {
     localStorage.chat = messages.innerHTML;
+  }
+
+  function clearChat() {
+    if (!confirm("Clear chat history?")) return;
+    messages.innerHTML = "";
+    localStorage.removeItem("chat");
   }
 
   async function send() {
@@ -205,14 +218,13 @@
       bubble.className = "bubble ai";
       messages.appendChild(bubble);
 
-      // Streaming effect
       let i = 0;
-      const textReply = data.reply;
+      const reply = data.reply;
       const interval = setInterval(() => {
-        bubble.textContent += textReply[i];
+        bubble.textContent += reply[i];
         i++;
         messages.scrollTop = messages.scrollHeight;
-        if (i >= textReply.length) {
+        if (i >= reply.length) {
           clearInterval(interval);
           saveChat();
         }
