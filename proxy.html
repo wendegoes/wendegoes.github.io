@@ -1,31 +1,18 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Proxy</title>
-  <style>
-    body { background:#111; color:#fff; font-family:sans-serif }
-    input,button { padding:10px; font-size:16px }
-    #content { margin-top:15px }
-  </style>
-</head>
 <body>
-
-<input id="url" placeholder="https://example.com">
+<input id="u" placeholder="https://example.com">
 <button onclick="go()">Go</button>
-
-<div id="content"></div>
+<pre id="out"></pre>
 
 <script>
 async function go() {
-  const url = document.getElementById("url").value;
-  const proxy = "https://proxy2.noah-ruwersma.workers.dev/";
-
-  const res = await fetch(proxy + encodeURIComponent(url));
-  const html = await res.text();
-
-  document.getElementById("content").innerHTML = html;
+  const u = document.getElementById("u").value;
+  const r = await fetch(
+    "https://proxy2.noah-ruwersma.workers.dev/" + encodeURIComponent(u)
+  );
+  document.getElementById("out").textContent = await r.text();
 }
 </script>
-
 </body>
 </html>
