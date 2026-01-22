@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Clicker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { box-sizing: border-box; font-family: 'Space Grotesk', sans-serif; }
+@keyframes pulse-glow {0%,100%{filter:drop-shadow(0 0 20px rgba(251,191,36,0.4));}50%{filter:drop-shadow(0 0 40px rgba(251,191,36,0.8));}}
+@keyframes float {0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes click-burst {0%{transform:scale(1);}50%{transform:scale(0.9);}100%{transform:scale(1);}}
+@keyframes number-pop {0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(1.5);}}
+.coin-button {animation: float 3s ease-in-out infinite, pulse-glow 2s ease-in-out infinite;transition: all 0.1s ease;}
+.coin-button:active {animation: click-burst 0.1s ease-out;}
+.coin-button:hover {filter: drop-shadow(0 0 50px rgba(251, 191, 36, 1));}
+.number-float {position:absolute;pointer-events:none;animation:number-pop 0.8s ease-out forwards;font-weight:700;color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,0.8);}
+.upgrade-card {transition: all 0.2s ease;}
+.upgrade-card:hover:not(:disabled){transform: translateY(-2px);box-shadow:0 10px 40px rgba(0,0,0,0.3);}
+.upgrade-card:disabled{opacity:0.5;cursor:not-allowed;}
+.stats-glow{background:linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(245,158,11,0.05) 100%);border:1px solid rgba(251,191,36,0.2);}
+.grid-bg{background-image: linear-gradient(rgba(251,191,36,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(251,191,36,0.03) 1px, transparent 1px);background-size:50px 50px;}
+</style>
+</head>
+<body class="h-full bg-gray-950 text-white overflow-auto">
+<div id="app" class="min-h-full w-full grid-bg">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <header class="text-center mb-8">
+      <h1 id="game-title" class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 bg-clip-text text-transparent mb-2">Crypto Miner</h1>
+      <p class="text-gray-400 text-lg">Click to mine • Buy upgrades • Build your empire</p>
+    </header>
+    <div class="stats-glow rounded-2xl p-4 md:p-6 mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center">
+          <div class="text-gray-400 text-sm mb-1">Total <span class="currency-name">Coins</span></div>
+          <div id="total-coins" class="text-2xl md:text-3xl font-bold text-amber-400">0</div>
+        </div>
+        <div class="text-center">
+          <div class="text-gray-400 text-sm mb-1">Per Click</div>
+          <div id="per-click" class="text-2xl md:text-3xl font-bold text-emerald-400">+1</div>
+        </div>
+        <div class="text-center">
+          <div class="text-gray-400 text-sm mb-1">Per Second</div>
+          <div id="per-second" class="text-2xl md:text-3xl font-bold text-blue-400">0</div>
+        </div>
+        <div class="text-center">
+          <div class="text-gray-400 text-sm mb-1">Total Miners</div>
+          <div id="total-miners" class="text-2xl md:text-3xl font-bold text-purple-400">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="flex flex-col items-center justify-center">
+        <div id="click-area" class="relative mb-6">
+          <button id="mine-button" class="coin-button w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center justify-center cursor-pointer border-4 border-amber-300 focus:outline-none">
+            <svg class="w-24 h-24 md:w-32 md:h-32" viewBox="0 0 100 100" fill="none">
+              <circle cx="50" cy="50" r="45" fill="url(#coinGrad)" stroke="#d97706" stroke-width="3"/>
+              <text x="50" y="58" text-anchor="middle" font-size="36" font-weight="bold" fill="#92400e">₿</text>
+              <defs>
+                <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fcd34d"/>
+                  <stop offset="50%" stop-color="#fbbf24"/>
+                  <stop offset="100%" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </button>
+        </div>
+        <p class="text-gray-400 text-center">Click the coin to mine!</p>
+      </div>
+      <div class="bg-gray-900/80 rounded-3xl p-6 border border-gray-800">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+          <svg class="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg> Upgrades
+        </h2>
+        <div class="space-y-4" id="upgrades-container">
+          <button id="buy-miner" class="upgrade-card w-full bg-gray-800 hover:bg-gray-750 rounded-2xl p-4 text-left border border-gray-700 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-semibold text-white">Basic Miner</h3>
+                  <p class="text-sm text-gray-400">+0.1 <span class="currency-name">coins</span>/sec</p>
+                </div>
+                <div class="text-right">
+                  <div id="miner-cost" class="text-amber-400 font-bold">10</div>
+                  <div id="miner-count" class="text-xs text-gray-500">Owned: 0</div>
+                </div>
+              </div>
+            </div>
+          </button>
+          <button id="buy-gpu" class="upgrade-card w-full bg-gray-800 hover:bg-gray-750 rounded-2xl p-4 text-left border border-gray-700 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-semibold text-white">GPU Rig</h3>
+                  <p class="text-sm text-gray-400">+1 <span class="currency-name">coin</span>/sec</p>
+                </div>
+                <div class="text-right">
+                  <div id="gpu-cost" class="text-amber-400 font-bold">100</div>
+                  <div id="gpu-count" class="text-xs text-gray-500">Owned: 0</div>
+                </div>
+              </div>
+            </div>
+          </button>
+          <!-- You can add more upgrades (farm, datacenter, click upgrade) here following the same pattern -->
+        </div>
+      </div>
+    </div>
+    <div class="mt-8 text-center">
+      <button id="reset-btn" class="px-6 py-2 bg-gray-800 hover:bg-red-900/50 text-gray-400 hover:text-red-400 rounded-full text-sm transition-all border border-gray-700 hover:border-red-800">🔄 Reset Progress</button>
+      <div id="reset-confirm" class="hidden mt-3 space-x-3">
+        <span class="text-red-400 text-sm">Are you sure?</span>
+        <button id="confirm-reset" class="px-4 py-1 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm">Yes, Reset</button>
+        <button id="cancel-reset" class="px-4 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-full text-sm">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const baseCosts = { miner:10, gpu:100, farm:1000, datacenter:10000, click:50 };
+let gameState = { coins:0, miners:0, gpus:0, farms:0, datacenters:0, coinsPerClick:1, coinsPerSecond:0 };
+
+// LocalStorage Load
+function loadGame() {
+  const saved = localStorage.getItem('cryptoMinerSave');
+  if(saved){
+    Object.assign(gameState, JSON.parse(saved));
+  }
+}
+loadGame();
+
+// Format numbers
+function formatNumber(num){
+  if(num>=1e12) return (num/1e12).toFixed(2)+'T';
+  if(num>=1e9) return (num/1e9).toFixed(2)+'B';
+  if(num>=1e6) return (num/1e6).toFixed(2)+'M';
+  if(num>=1e3) return (num/1e3).toFixed(2)+'K';
+  return Math.floor(num).toLocaleString();
+}
+
+// Calculate cost
+function getCost(type,count){
+  return Math.floor(baseCosts[type]*Math.pow(1.15,count));
+}
+
+// Update UI
+function updateUI(){
+  document.getElementById('total-coins').textContent=formatNumber(gameState.coins);
+  document.getElementById('per-click').textContent='+'+formatNumber(gameState.coinsPerClick);
+  document.getElementById('per-second').textContent=formatNumber(gameState.coinsPerSecond);
+  const totalMiners = gameState.miners+gameState.gpus+gameState.farms+gameState.datacenters;
+  document.getElementById('total-miners').textContent=formatNumber(totalMiners);
+
+  document.getElementById('miner-cost').textContent=formatNumber(getCost('miner',gameState.miners));
+  document.getElementById('miner-count').textContent='Owned: '+gameState.miners;
+  document.getElementById('buy-miner').disabled=gameState.coins<getCost('miner',gameState.miners);
+
+  document.getElementById('gpu-cost').textContent=formatNumber(getCost('gpu',gameState.gpus));
+  document.getElementById('gpu-count').textContent='Owned: '+gameState.gpus;
+  document.getElementById('buy-gpu').disabled=gameState.coins<getCost('gpu',gameState.gpus);
+}
+
+// Save to localStorage
+function saveGame(){
+  localStorage.setItem('cryptoMinerSave',JSON.stringify(gameState));
+}
+
+// Coin click
+document.getElementById('mine-button').addEventListener('click',e=>{
+  gameState.coins+=gameState.coinsPerClick;
+  updateUI();
+  clearTimeout(window.saveTimeout);
+  window.saveTimeout=setTimeout(saveGame,500);
+});
+
+// Buy upgrades
+function buyUpgrade(type){
+  const cost=getCost(type,gameState[type==='miner'? 'miners':'gpus']);
+  if(gameState.coins>=cost){
+    gameState.coins-=cost;
+    if(type==='miner') gameState.miners++; else if(type==='gpu') gameState.gpus++;
+    gameState.coinsPerSecond=gameState.miners*0.1+gameState.gpus*1;
+    updateUI();
+    saveGame();
+  }
+}
+document.getElementById('buy-miner').addEventListener('click',()=>buyUpgrade('miner'));
+document.getElementById('buy-gpu').addEventListener('click',()=>buyUpgrade('gpu'));
+
+// Passive income
+setInterval(()=>{
+  if(gameState.coinsPerSecond>0){
+    gameState.coins+=gameState.coinsPerSecond/10;
+    updateUI();
+    if(Date.now()%5000<100) saveGame();
+  }
+},100);
+
+// Reset
+document.getElementById('reset-btn').addEventListener('click',()=>document.getElementById('reset-confirm').classList.remove('hidden'));
+document.getElementById('cancel-reset').addEventListener('click',()=>document.getElementById('reset-confirm').classList.add('hidden'));
+document.getElementById('confirm-reset').addEventListener('click',()=>{
+  localStorage.removeItem('cryptoMinerSave');
+  gameState={coins:0,miners:0,gpus:0,farms:0,datacenters:0,coinsPerClick:1,coinsPerSecond:0};
+  updateUI();
+  document.getElementById('reset-confirm').classList.add('hidden');
+});
+
+// Initial UI update
+updateUI();
+</script>
+</body>
+</html>
